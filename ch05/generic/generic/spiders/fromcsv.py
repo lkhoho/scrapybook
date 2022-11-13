@@ -10,7 +10,7 @@ class FromcsvSpider(scrapy.Spider):
     name = "fromcsv"
 
     def start_requests(self):
-        with open(getattr(self, "file", "todo.csv"), "rU") as f:
+        with open(getattr(self, "file", "todo.csv")) as f:
             reader = csv.DictReader(f)
             for line in reader:
                 request = Request(line.pop('url'))
@@ -20,7 +20,7 @@ class FromcsvSpider(scrapy.Spider):
     def parse(self, response):
         item = Item()
         l = ItemLoader(item=item, response=response)
-        for name, xpath in response.meta['fields'].iteritems():
+        for name, xpath in response.meta['fields'].items():
             if xpath:
                 item.fields[name] = Field()
                 l.add_xpath(name, xpath)

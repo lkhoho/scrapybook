@@ -1,10 +1,10 @@
 import datetime
-import urlparse
+import urllib.parse as urlparse
 import socket
 import scrapy
 import json
 
-from scrapy.loader.processors import MapCompose, Join
+from itemloaders.processors import MapCompose, Join
 from scrapy.loader import ItemLoader
 from scrapy.http import Request
 
@@ -13,17 +13,17 @@ from properties.items import PropertiesItem
 
 class ApiSpider(scrapy.Spider):
     name = 'api'
-    allowed_domains = ["web"]
+    allowed_domains = ["localhost"]
 
     # Start on the first index page
     start_urls = (
-        'http://web:9312/properties/api.json',
+        'http://localhost:9312/properties/api.json',
     )
 
     # Format the URLs based on the API call response
     def parse(self, response):
-        base_url = "http://web:9312/properties/"
-        js = json.loads(response.body)
+        base_url = "http://localhost:9312/properties/"
+        js = json.loads(response.text)
         for item in js:
             id = item["id"]
             title = item["title"]
@@ -33,7 +33,7 @@ class ApiSpider(scrapy.Spider):
     def parse_item(self, response):
         """ This function parses a property page.
 
-        @url http://web:9312/properties/property_000000.html
+        @url http://localhost:9312/properties/property_000000.html
         @returns items 1
         @scrapes title price description address image_urls
         @scrapes url project spider server date
@@ -44,15 +44,15 @@ class ApiSpider(scrapy.Spider):
 
         # Load fields using XPath expressions
         l.add_value('title', response.meta['title'],
-                    MapCompose(unicode.strip, unicode.title))
+                    MapCompose(str.strip, str.title))
         l.add_xpath('price', './/*[@itemprop="price"][1]/text()',
                     MapCompose(lambda i: i.replace(',', ''), float),
                     re='[,.0-9]+')
         l.add_xpath('description', '//*[@itemprop="description"][1]/text()',
-                    MapCompose(unicode.strip), Join())
+                    MapCompose(str.strip), Join())
         l.add_xpath('address',
                     '//*[@itemtype="http://schema.org/Place"][1]/text()',
-                    MapCompose(unicode.strip))
+                    MapCompose(str.strip))
         l.add_xpath('image_urls', '//*[@itemprop="image"][1]/@src',
                     MapCompose(lambda i: urlparse.urljoin(response.url, i)))
 

@@ -20,3 +20,7 @@ NEWSPIDER_MODULE = 'generic.spiders'
 # Disable S3
 AWS_ACCESS_KEY_ID = ""
 AWS_SECRET_ACCESS_KEY = ""
+
+# Fix deprecation warning on Scrapy of version 2.7+
+# See https://docs.scrapy.org/en/latest/topics/request-response.html#std-setting-REQUEST_FINGERPRINTER_IMPLEMENTATION
+REQUEST_FINGERPRINTER_IMPLEMENTATION = "2.7"

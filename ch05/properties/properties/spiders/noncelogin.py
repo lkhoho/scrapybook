@@ -1,8 +1,8 @@
 import datetime
-import urlparse
+import urllib.parse as urlparse
 import socket
 
-from scrapy.loader.processors import MapCompose, Join
+from itemloaders.processors import MapCompose, Join
 from scrapy.linkextractors import LinkExtractor
 from scrapy.spiders import CrawlSpider, Rule
 from scrapy.loader import ItemLoader
@@ -13,13 +13,13 @@ from properties.items import PropertiesItem
 
 class NonceLoginSpider(CrawlSpider):
     name = 'noncelogin'
-    allowed_domains = ["web"]
+    allowed_domains = ["localhost"]
 
     # Start on the welcome page
     def start_requests(self):
         return [
             Request(
-                "http://web:9312/dynamic/nonce",
+                "http://localhost:9312/dynamic/nonce",
                 callback=self.parse_welcome)
         ]
 
@@ -40,7 +40,7 @@ class NonceLoginSpider(CrawlSpider):
     def parse_item(self, response):
         """ This function parses a property page.
 
-        @url http://web:9312/properties/property_000000.html
+        @url http://localhost:9312/properties/property_000000.html
         @returns items 1
         @scrapes title price description address image_urls
         @scrapes url project spider server date
@@ -51,15 +51,15 @@ class NonceLoginSpider(CrawlSpider):
 
         # Load fields using XPath expressions
         l.add_xpath('title', '//*[@itemprop="name"][1]/text()',
-                    MapCompose(unicode.strip, unicode.title))
+                    MapCompose(str.strip, str.title))
         l.add_xpath('price', './/*[@itemprop="price"][1]/text()',
                     MapCompose(lambda i: i.replace(',', ''), float),
                     re='[,.0-9]+')
         l.add_xpath('description', '//*[@itemprop="description"][1]/text()',
-                    MapCompose(unicode.strip), Join())
+                    MapCompose(str.strip), Join())
         l.add_xpath('address',
                     '//*[@itemtype="http://schema.org/Place"][1]/text()',
-                    MapCompose(unicode.strip))
+                    MapCompose(str.strip))
         l.add_xpath('image_urls', '//*[@itemprop="image"][1]/@src',
                     MapCompose(lambda i: urlparse.urljoin(response.url, i)))
 
